@@ -1,51 +1,34 @@
-import _ from 'lodash';
-import React, { Component, PropTypes } from 'react';
-import { reduxForm } from 'redux-form';
-import { createPost } from '../actions/index';
-import { Link } from 'react-router';
+import React, { Component } from 'react';
+import { Field, reduxForm } from 'redux-form';
+import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
 
-const FIELDS = {
-    title: {
-        type: 'input',
-        label: 'Title for Post'
-    },
-    categories: {
-        type: 'input',
-        label: 'Enter some categories for this post'
-    },
-    content: {
-        type: 'textarea',
-        label: 'Post Contents'
-    }
-};
+import { createPost } from '../actions';
 
 class PostsNew extends Component {
-    static contextTypes = {
-        router: PropTypes.object
-    };
-
-    onSubmit(props) {
-        this.props.createPost(props)
-            .then(() => {
-                // blog post has been created, navigate the user to the index
-                // We navigate by calling this.context.router.push with the
-                // new path to navigate to.
-                this.context.router.push('/');
-            });
-    }
-
-    renderField(fieldConfig, field) {
-        const fieldHelper = this.props.fields[field];
+    renderField(field) {
+        const { meta: { touched, error } } = field;
+        const className = `form-group ${touched && error ? 'has-danger' : ''}`;
 
         return (
-            <div key={field} className={`form-group ${fieldHelper.touched && fieldHelper.invalid ? 'has-danger' : ''}`}>
-                <label>{fieldConfig.label}</label>
-                <fieldConfig.type type="text" className="form-control" {...fieldHelper} />
+            <div className={className}>
+                <label>{field.label}</label>
+                <input
+                    className="form-control"
+                    type="text"
+                    {...field.input}
+                />
                 <div className="text-help">
-                    {fieldHelper.touched ? fieldHelper.error : ''}
+                    {touched ? error : ''}
                 </div>
             </div>
         );
+    }
+
+    onSubmit(values) {
+        this.props.createPost(values, () => {
+            this.props.history.push('/');
+        });
     }
 
     render() {
@@ -53,8 +36,9 @@ class PostsNew extends Component {
 
         return (
             <form onSubmit={handleSubmit(this.onSubmit.bind(this))}>
-                <h3>Create A New Post</h3>
-                {_.map(FIELDS, this.renderField.bind(this))}
+                <Field label="Title For Post" name="title" component={this.renderField} />
+                <Field label="Categories" name="categories" component={this.renderField} />
+                <Field label="Post Content" name="content" component={this.renderField} />
                 <button type="submit" className="btn btn-primary">Submit</button>
                 <Link to="/" className="btn btn-danger">Cancel</Link>
             </form>
@@ -65,19 +49,25 @@ class PostsNew extends Component {
 function validate(values) {
     const errors = {};
 
-    _.each(FIELDS, (type, field) => {
-        if (!values[field]) {
-            errors[field] = `Enter a ${field}`;
-        }
-    });
+    // Validate the inputs from 'values'
+    if (!values.title) {
+        errors.title = 'Enter a title';
+    }
+    if (!values.categories) {
+        errors.categories = 'Enter some categories';
+    }
+    if (!values.content) {
+        errors.content = 'Enter some content please';
+    }
 
+    // If errors is empty, the form is fine to submit
+    // If errors has *any* properties, redux form assumes form is invalid
     return errors;
 }
 
 // connect: 1st is mapStateToProps, 2nd is mapDispatchToProps
 // reduxForm: 1st is form config, 2nd is mapStateToProps, 3rd is mapDispatchToProps
 export default reduxForm({
-    form: 'PostsNewForm',
-    fields: _.keys(FIELDS),
-    validate
-}, null, { createPost })(PostsNew);
+    validate,
+    form: 'PostsNewForm'
+})(connect(null, { createPost })(PostsNew));
