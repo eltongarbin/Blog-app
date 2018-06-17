@@ -6,7 +6,13 @@ import { connect } from 'react-redux';
 import { createPost } from './../../actions';
 
 class PostForm extends PureComponent {
-  renderField({ input, label, type, meta: { touched, error, warning } }) {
+  onSubmit = (values) => {
+    this.props.createPost(values, () => {
+      this.props.history.push('/');
+    });
+  };
+
+  renderField({ input, label, meta: { touched, error } }) {
     const className = `form-group ${touched && error ? 'has-danger' : ''}`;
 
     return (
@@ -17,12 +23,6 @@ class PostForm extends PureComponent {
       </div>
     );
   }
-
-  onSubmit = (values) => {
-    this.props.createPost(values, () => {
-      this.props.history.push('/');
-    });
-  };
 
   render() {
     const { handleSubmit } = this.props;
@@ -74,4 +74,9 @@ const validate = (values) => {
 export default reduxForm({
   form: 'PostForm',
   validate
-})(connect(null, { createPost })(PostForm));
+})(
+  connect(
+    null,
+    { createPost }
+  )(PostForm)
+);

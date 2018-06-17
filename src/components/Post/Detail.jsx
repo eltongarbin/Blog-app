@@ -41,4 +41,7 @@ const mapStateToProps = ({ posts }, ownProps) => ({
   post: posts[ownProps.match.params.id]
 });
 
-export default connect(mapStateToProps, { fetchPost, deletePost })(PostDetail);
+export default connect(
+  mapStateToProps,
+  { fetchPost, deletePost }
+)(PostDetail);

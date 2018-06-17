@@ -38,6 +38,7 @@ class PostList extends PureComponent {
   }
 }
 
-export default connect((state) => ({ posts: state.posts }), { fetchPosts })(
-  PostList
-);
+export default connect(
+  (state) => ({ posts: state.posts }),
+  { fetchPosts }
+)(PostList);

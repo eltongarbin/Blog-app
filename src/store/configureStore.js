@@ -6,7 +6,7 @@ import rootReducer from './../reducers';
 
 export default () => {
   const composeEnhancers = composeWithDevTools({});
-  let store = createStore(
+  const store = createStore(
     rootReducer,
     composeEnhancers(applyMiddleware(thunk))
   );
